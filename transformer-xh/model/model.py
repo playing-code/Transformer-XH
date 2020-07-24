@@ -110,14 +110,14 @@ class TransformerXHEncoder(BertEncoder):
     def build_model(self):
         self.graph_layers = nn.ModuleList()
         # input to hidden
-        device = torch.device("cuda")
+        #device = torch.device("cuda")
 
-        i2h = self.build_input_layer().to(device)
+        i2h = self.build_input_layer()#.to(device)
         self.graph_layers.append(i2h)
         # hidden to hidden
-        h2h = self.build_hidden_layer().to(device)
+        h2h = self.build_hidden_layer()#.to(device)
         self.graph_layers.append(h2h)
-        h2h = self.build_hidden_layer().to(device)
+        h2h = self.build_hidden_layer()#.to(device)
         self.graph_layers.append(h2h)
 
     ### here the graph has dimension 64, with 12 heads, the dropout rates are 0.6
@@ -208,10 +208,17 @@ class ModelHelper(BertPreTrainedModel):
         self.config_model = config_model
         self.args = args
         self.node_dropout = nn.Dropout(self.config.hidden_dropout_prob)
-        self.final_layer = nn.Linear(self.config.hidden_size, 1)
-        self.final_layer.apply(self.init_weights)
+        #self.final_layer = nn.Linear(self.config.hidden_size, 1)
+        self.final_layer1 = nn.Linear(self.config.hidden_size*2, 200)
+        self.final_layer2 = nn.Linear(200, 1)
+        # print('???',self.init_weights())
+        #self.final_layer.apply(self.init_weights)
+        #self.final_layer.init_weights()
+        #self._init_weights(self.final_layer)
+        self._init_weights(self.final_layer1)
+        self._init_weights(self.final_layer2)
 
-    def forward(self, batch, device):
+    def forward(self, batch):
         pass
         
 
@@ -227,7 +234,7 @@ class Model:
         self.bert_node_encoder = Transformer_xh.from_pretrained(self.config['bert_model_file'], cache_dir=PYTORCH_PRETRAINED_BERT_CACHE / 'distributed_{}'.format(args.local_rank))
         self.bert_config = self.bert_node_encoder.config
         self.network= ModelHelper(self.bert_node_encoder, self.args, self.bert_config, self.config_model)
-        self.device= args.device
+        #self.device= args.device
 
     def half(self):
         self.network.half()
